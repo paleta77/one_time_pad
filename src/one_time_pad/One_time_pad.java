@@ -8,6 +8,7 @@ package one_time_pad;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import javax.swing.JFrame;
 
 /**
  *
@@ -30,7 +31,15 @@ public class One_time_pad {
     }
     
     public static void main(String[] args) {
+        //inicjalizacja interfejsu
+        JFrame frame = new JFrame();
+        frame.getContentPane().add(new mainInteface());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(410,500);
+        frame.setVisible(true);
+        //koniec interfejsu
         System.out.print(generujKluczSzyfrujacy(20));
+        
     }
     
 }
