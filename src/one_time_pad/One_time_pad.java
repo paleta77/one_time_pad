@@ -35,7 +35,7 @@ public class One_time_pad {
         return los;
     }
 
-    public static void zapis_i_odczyt_plik(String plik_1) {
+    public static void en_odczyt_i_zapis_plik(String plik_1) {
 
         FileInputStream daneDoSzyfrowania = null;
         FileOutputStream zapisDoPliku = null;
@@ -54,15 +54,59 @@ public class One_time_pad {
             int i = 0;                              //iterator
 
             while (daneDoSzyfrowania.read(bufor) != -1) {
-                //zamiana na bity i szyfrowanie ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
                 System.out.println("tablica z buforem: [" + i + "]= " + bufor[i]);
-
-                wynik[i] = (byte) (bufor[i] + 10);
+                wynik[i] = (byte) (bufor[i] + 15);                  //zaszyfrowanie
                 System.out.println("tablica zaszyfrowaniem: [" + i + "]= " + wynik[i]);
-
-                zapisDoPliku.write(bufor);
                 i++;
+                zapisDoPliku.write(wynik);
+
+            }
+
+            //System.out.println(bufor);
+        } catch (IOException wyjatek) {
+            System.out.println("Błąd wejścia-wyjścia!");
+        }
+
+        try {
+            if (daneDoSzyfrowania != null) {
+                daneDoSzyfrowania.close();
+            }
+            if (zapisDoPliku != null) {
+                zapisDoPliku.close();
+            }
+        } catch (IOException wyjatek) {
+            System.out.println("Błąd zamykania strumieni!");
+        }
+
+    }
+
+    public static void de_odczyt_i_zapis_plik(String plik_2) {
+
+        FileInputStream daneDoSzyfrowania = null;
+        FileOutputStream zapisDoPliku = null;
+
+        //wczytywanie i zapis
+        try {
+            daneDoSzyfrowania = new FileInputStream(plik_2);
+            zapisDoPliku = new FileOutputStream("plik_3.pdf");
+        } catch (FileNotFoundException wyjatek) {
+            System.out.println("Nie znaleziono takiego pliku!");
+        }
+
+        try {
+            byte[] bufor = new byte[1024];          //tablica typu byte
+            byte[] wynik = new byte[1024];
+            int i = 0;                              //iterator
+
+            while (daneDoSzyfrowania.read(bufor) != -1) {
+
+                System.out.println("2 tablica z zaszyfrowaniem: [" + i + "]= " + bufor[i]);
+                wynik[i] = (byte) (bufor[i] - 15);                  //odszyfrowanie
+                System.out.println("2 tablica po odkodowaniu: [" + i + "]= " + wynik[i]);
+                i++;
+                zapisDoPliku.write(wynik);
+
             }
 
             //System.out.println(bufor);
@@ -84,8 +128,10 @@ public class One_time_pad {
     }
 
     public static void main(String[] args) {
-        String plik_1 = "plik.pdf";                //dowolna ścieżka do pliku
-        zapis_i_odczyt_plik(plik_1);
+        String plik_1 = "plik.pdf";
+        String plik_2 = "plik_2.pdf";                    //dowolna ścieżka do pliku
+        en_odczyt_i_zapis_plik(plik_1);
+        de_odczyt_i_zapis_plik(plik_2);
         //szyfrowanie
         //System.out.print(generujKluczSzyfrujacy(20));
     }
