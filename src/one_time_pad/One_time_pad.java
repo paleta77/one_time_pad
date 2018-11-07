@@ -50,11 +50,19 @@ public class One_time_pad {
 
         try {
             byte[] bufor = new byte[1024];          //tablica typu byte
+            byte[] wynik = new byte[1024];
             int i = 0;                              //iterator
+
             while (daneDoSzyfrowania.read(bufor) != -1) {
                 //zamiana na bity i szyfrowanie ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+                System.out.println("tablica z buforem: [" + i + "]= " + bufor[i]);
+
+                wynik[i] = (byte) (bufor[i] + 10);
+                System.out.println("tablica zaszyfrowaniem: [" + i + "]= " + wynik[i]);
+
                 zapisDoPliku.write(bufor);
-                ++i;
+                i++;
             }
 
             //System.out.println(bufor);
