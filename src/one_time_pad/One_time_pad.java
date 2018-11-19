@@ -37,6 +37,8 @@ public class One_time_pad {
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setSize(410,500);
         frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
+        frame.setTitle("One Time Pad");
         //koniec interfejsu
         System.out.print(generujKluczSzyfrujacy(20));
         
