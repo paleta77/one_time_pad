@@ -5,6 +5,8 @@
  */
 package one_time_pad;
 
+import javafx.beans.property.DoubleProperty;
+
 //do szyfrowania
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,11 @@ import java.io.FileOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.util.Locale;
+import javax.swing.JFrame;
+
 /**
  *
  * @author pawel
@@ -26,113 +33,68 @@ public class One_time_pad {
      * @param args the command line arguments
      *
      */
-    public static List generujKluczSzyfrujacy(int dlugosc) {
+    public static byte[] generujKluczSzyfrujacy(int dlugosc) throws FileNotFoundException, IOException {
         Random generator = new Random(System.currentTimeMillis()); //Inicjalizacja generatora ktory za ziarno pobiera aktualny czas w milisekunach
-        List los = new ArrayList(); //Lista tablicowa. Szybszy odczyt niz dla listy linkowanej
-        for (int i = 0; i < dlugosc; i++) {
-            los.add(generator.nextBoolean()); //Dodawanie do listy bit po bicie 
-        }
-        return los;
+        byte[] klucz = new byte[dlugosc]; //Lista tablicowa. Szybszy odczyt niz dla listy linkowanej
+        generator.nextBytes(klucz); //Dodawanie do listy bit po bicie
+        
+        File fileOut = new File("klucz.txt");
+        FileOutputStream fop = new FileOutputStream(fileOut);
+        fop.write(klucz);
+        
+        return klucz;
     }
 
-    public static void en_odczyt_i_zapis_plik(String plik_1) {
-
-        FileInputStream daneDoSzyfrowania = null;
-        FileOutputStream zapisDoPliku = null;
-
-        //wczytywanie i zapis
-        try {
-            daneDoSzyfrowania = new FileInputStream(plik_1);
-            zapisDoPliku = new FileOutputStream("plik_2.pdf");
-        } catch (FileNotFoundException wyjatek) {
-            System.out.println("Nie znaleziono takiego pliku!");
-        }
-
-        try {
-            byte[] bufor = new byte[1024];          //tablica typu byte
-            byte[] wynik = new byte[1024];
-            int i = 0;                              //iterator
-
-            while (daneDoSzyfrowania.read(bufor) != -1) {
-
-                System.out.println("tablica z buforem: [" + i + "]= " + bufor[i]);
-                wynik[i] = (byte) (bufor[i] + 15);                  //zaszyfrowanie
-                System.out.println("tablica zaszyfrowaniem: [" + i + "]= " + wynik[i]);
-                i++;
-                zapisDoPliku.write(wynik);
-
-            }
-
-            //System.out.println(bufor);
-        } catch (IOException wyjatek) {
-            System.out.println("Błąd wejścia-wyjścia!");
-        }
-
-        try {
-            if (daneDoSzyfrowania != null) {
-                daneDoSzyfrowania.close();
-            }
-            if (zapisDoPliku != null) {
-                zapisDoPliku.close();
-            }
-        } catch (IOException wyjatek) {
-            System.out.println("Błąd zamykania strumieni!");
-        }
-
-    }
-
-    public static void de_odczyt_i_zapis_plik(String plik_2) {
-
-        FileInputStream daneDoSzyfrowania = null;
-        FileOutputStream zapisDoPliku = null;
-
-        //wczytywanie i zapis
-        try {
-            daneDoSzyfrowania = new FileInputStream(plik_2);
-            zapisDoPliku = new FileOutputStream("plik_3.pdf");
-        } catch (FileNotFoundException wyjatek) {
-            System.out.println("Nie znaleziono takiego pliku!");
-        }
-
-        try {
-            byte[] bufor = new byte[1024];          //tablica typu byte
-            byte[] wynik = new byte[1024];
-            int i = 0;                              //iterator
-
-            while (daneDoSzyfrowania.read(bufor) != -1) {
-
-                System.out.println("2 tablica z zaszyfrowaniem: [" + i + "]= " + bufor[i]);
-                wynik[i] = (byte) (bufor[i] - 15);                  //odszyfrowanie
-                System.out.println("2 tablica po odkodowaniu: [" + i + "]= " + wynik[i]);
-                i++;
-                zapisDoPliku.write(wynik);
-
-            }
-
-            //System.out.println(bufor);
-        } catch (IOException wyjatek) {
-            System.out.println("Błąd wejścia-wyjścia!");
-        }
-
-        try {
-            if (daneDoSzyfrowania != null) {
-                daneDoSzyfrowania.close();
-            }
-            if (zapisDoPliku != null) {
-                zapisDoPliku.close();
-            }
-        } catch (IOException wyjatek) {
-            System.out.println("Błąd zamykania strumieni!");
-        }
-
-    }
-
-    public static void main(String[] args) {
-        String plik_1 = "plik.pdf";
-        String plik_2 = "plik_2.pdf";                    //dowolna ścieżka do pliku
-        en_odczyt_i_zapis_plik(plik_1);
-        de_odczyt_i_zapis_plik(plik_2);
+    public static void szyfruj(String path) throws IOException {
+        //wczytanie pliku
+        File file = new File(path);
+        byte[] fileContent = Files.readAllBytes(file.toPath());
+        //generowanie klucza szyfrujacego
+        byte[] key = new byte[fileContent.length];
+        key = generujKluczSzyfrujacy(fileContent.length);
+        //tablica ktora zostanie pozniej zapisana do pliku
+        byte[] output = new byte[fileContent.length];
         //szyfrowanie
-        //System.out.print(generujKluczSzyfrujacy(20));
+        for (int i = 0; i < fileContent.length; i++) {
+            System.out.print(fileContent[i] + " ");
+            output[i] = (byte) (fileContent[i] ^ key[i]);
+        }
+        //zapis szyfrowanego pliku
+        File fileOut = new File("plikZaszyfrowany.pdf");
+        FileOutputStream fop = new FileOutputStream(fileOut);
+        fop.write(output);
+        fop.close();
+    }
+    
+    public static void odszyfruj(String path) throws IOException{
+        //otwieranie pliku z kluczem. Jest zapisywany przy szyfrowaniu
+        File plikZKluczem = new File("klucz.txt");
+        byte[] key = Files.readAllBytes(plikZKluczem.toPath());
+        //otwieranie zaszyfrowanego pliku
+        File file = new File(path);
+        byte[] fileContent = Files.readAllBytes(file.toPath());
+        //tablica ktora zostanie pozniej zapisana do pliku
+        byte[] output = new byte[fileContent.length];
+        //szyfrowanie
+        for (int i = 0; i < fileContent.length; i++) {
+            System.out.print(fileContent[i] + " ");
+            output[i] = (byte) (fileContent[i] ^ key[i]);
+        }
+        //zapis odszyfrowanego pliku
+        File fileOut = new File("plikOdszyfrowany.pdf");
+        FileOutputStream fop = new FileOutputStream(fileOut);
+        fop.write(output);
+        fop.close();
+    }
+
+    public static void main(String[] args) throws FileNotFoundException, IOException {
+        JFrame frame = new JFrame();
+        frame.getContentPane().add(new NewJPanel());
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setSize(440,150);
+        frame.setVisible(true);
+        frame.setLocationRelativeTo(null);
+        frame.setTitle("One Time Pad");
+        //szyfruj();
     }
 }
