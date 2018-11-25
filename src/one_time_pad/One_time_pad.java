@@ -22,6 +22,8 @@ import java.io.File;
 import java.nio.file.Files;
 import java.util.Locale;
 import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
 
 /**
  *
@@ -37,11 +39,11 @@ public class One_time_pad {
         Random generator = new Random(System.currentTimeMillis()); //Inicjalizacja generatora ktory za ziarno pobiera aktualny czas w milisekunach
         byte[] klucz = new byte[dlugosc]; //Lista tablicowa. Szybszy odczyt niz dla listy linkowanej
         generator.nextBytes(klucz); //Dodawanie do listy bit po bicie
-        
+
         File fileOut = new File("klucz.txt");
         FileOutputStream fop = new FileOutputStream(fileOut);
         fop.write(klucz);
-        
+
         return klucz;
     }
 
@@ -65,8 +67,56 @@ public class One_time_pad {
         fop.write(output);
         fop.close();
     }
-    
-    public static void odszyfruj(String path) throws IOException{
+
+    public static String szyfrujTekst(String napis) throws IOException {
+        //generowanie klucza szyfrujacego
+        byte[] key = new byte[napis.length()];
+        key = generujKluczSzyfrujacy(napis.length());
+        //tablica ktora zostanie pozniej zapisana do pliku
+        byte[] output = new byte[napis.length()];
+        //szyfrowanie
+        String zwrot = "";
+        for (int i = 0; i < napis.length(); i++) {
+            //System.out.print(napis.charAt(i) + " ");
+            output[i] = (byte) ((byte) napis.charAt(i) ^ key[i]);
+            //System.out.print(output[i] + " ");
+            zwrot += (char) output[i];
+        }
+        //zapis szyfrowanego pliku
+        File fileOut = new File("plikZaszyfrowany.txt");
+        FileOutputStream fop = new FileOutputStream(fileOut);
+        fop.write(output);
+        fop.close();
+        return zwrot;
+    }
+
+    public static String odszyfrujTekst(String napis) throws IOException {
+        //otwieranie pliku z kluczem. Jest zapisywany przy szyfrowaniu
+        File plikZKluczem = new File("klucz.txt");
+        byte[] key = Files.readAllBytes(plikZKluczem.toPath());
+        if (key.length == napis.length()) {
+            //tablica ktora zostanie pozniej zapisana do pliku
+            byte[] output = new byte[napis.length()];
+            //szyfrowanie
+            String zwrot = "";
+            for (int i = 0; i < napis.length(); i++) {
+                output[i] = (byte) ((byte) napis.charAt(i) ^ key[i]);
+                //System.out.print(output[i] + " ");
+                zwrot += (char) output[i];
+            }
+            //zapis odszyfrowanego pliku
+            File fileOut = new File("plikOdszyfrowany.txt");
+            FileOutputStream fop = new FileOutputStream(fileOut);
+            fop.write(output);
+            fop.close();
+
+            return zwrot;
+        } else {
+            return napis;
+        }
+    }
+
+    public static void odszyfruj(String path) throws IOException {
         //otwieranie pliku z kluczem. Jest zapisywany przy szyfrowaniu
         File plikZKluczem = new File("klucz.txt");
         byte[] key = Files.readAllBytes(plikZKluczem.toPath());
@@ -91,7 +141,7 @@ public class One_time_pad {
         JFrame frame = new JFrame();
         frame.getContentPane().add(new NewJPanel());
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(440,150);
+        frame.setSize(440, 350);
         frame.setVisible(true);
         frame.setLocationRelativeTo(null);
         frame.setTitle("One Time Pad");
